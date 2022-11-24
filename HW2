@@ -1,0 +1,67 @@
+#1.Импортируйте библиотеку pandas как pd. Загрузите датасет с разделителем ;. Проверьте размер таблицы, типы переменных, а затем выведите первые 7 строк, чтобы посмотреть на данные. head(n)
+import pandas as pd
+import numpy as np
+hotel=pd.read_csv(r'D:\Рабочий стол\ЕДІГЕ\course_of_data_since\lesson#15\hw_practice_2.csv', header=0, sep=';')
+hotel.shape
+hotel.dtypes
+hotel.head(8)
+#2.Приведите названия колонок к нижнему регистру и замените пробелы на знак нижнего подчеркивания rename, str.lower, str.replace
+hotel.columns=hotel.columns.str.replace(' ','_')
+hotel.columns=hotel.columns.str.lower()
+hotel
+hotel.value_counts('country')
+#3.Пользователи из каких стран совершили наибольшее число успешных бронирований? 
+hotel.query("reservation_status == 'Check-Out'").value_counts('country').head(10)
+#4 На сколько ночей в среднем бронируют отели разных типов?
+hotel["stays_total_nights"] = (hotel["stays_in_weekend_nights"] + hotel["stays_in_weekend_nights"])
+hotel.rename(columns = {'\tstays_total_nights':'days_total_nights'}, inplace = True)
+hotel2=[['hotel','stays_total_nights']]
+hotel2.groupby(['hotel'], as_index = False).mean('stays_total_nights')
+#5.Проанализируйте даты запланированного прибытия (самостоятельно)
+#6.На какой месяц чаще всего успешно оформляли бронь в 2016? Изменился ли самый популярный месяц в 2017?
+hotel.reservation_status_date.dtypes
+date_cols = ["reservation_status_date","arrival_full_date"]
+hotel[date_cols] = hotel[date_cols].astype("datetime64[ns]")
+hotel.reservation_status_date
+res_date=hotel.reservation_status_date
+res_date.dtypes
+hotel.reservation_status_date
+hotel.res_year=hotel.reservation_status_date.dt.to_period('y')
+hotel['res_mon']=hotel.reservation_status_date.dt.to_period('m')
+hotel16=hotel.query("res_year=='2016'")
+hotel.res_year=hotel.res_year.astype(str)
+#6.1
+hotel16.value_counts('res_mon').head(1)
+hotel17=hotel.query("res_year=='2017'")
+#6.2
+hotel17.value_counts('res_mon').head(1)
+#7.Сгруппируйте данные по годам и проверьте, на какой месяц бронирования отеля типа City Hotel отменялись чаще всего в каждый из периодов.
+cancels_ch=hotel.query("is_canceled!=0 and hotel=='City Hotel'")
+cancels_ch
+cancels_ch2=cancels_ch.groupby(['res_year', 'res_mon'], as_index = False).\
+           sum('is_canceled')
+cancels_ch2.groupby(['res_year'], as_index = False).\
+           max('is_canceled')
+cancels_ch2.res_year=cancels_ch2.res_year.astype(str)
+#7.1 2014
+cancels_14=cancels_ch2.query("res_year=='2014'").\
+                       groupby(['res_year', 'res_mon'], as_index = False).\
+                       agg({'is_canceled':'max'}).\
+                       sort_values('is_canceled', ascending = False).\
+                       head(1)
+cancels_14
+#7.2 2015
+cancels_15=cancels_ch2.query("res_year=='2015'").\
+                       groupby(['res_year', 'res_mon'], as_index = False).\
+                       agg({'is_canceled':'max'}).\
+                       sort_values('is_canceled', ascending = False).\
+                       head(1)
+cancels_15
+#7.3 2016
+cancels_16=cancels_ch2.query("res_year=='2016'").\
+                       groupby(['res_year', 'res_mon'], as_index = False).\
+                       agg({'is_canceled':'max'}).\
+                       sort_values('is_canceled', ascending = False).\
+                       head(1)
+cancels_16
+
